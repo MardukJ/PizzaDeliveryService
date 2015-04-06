@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- Порядок bean не эдементов не имеет значения-->
+    <!-- pizza repository -->
+
+    <context:component-scan base-package="ua.epam.rd">
+        <!--<context:include-filter type="annotation" expression="ua.epam.rd.annotation.OrderAnnotation"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"></context:exclude-filter>-->
+    </context:component-scan>
+
+    <!-- Поиск @transactional -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- для теста -->
+    <bean name="pizzaService" class="ua.epam.rd.sevice.PizzaService">
+        <property name="pizza">
+            <list>
+                <bean class="ua.epam.rd.domain.Pizza">
+                    <constructor-arg name="name" type="java.lang.String" value="BigMargarita"/>
+                    <constructor-arg name="price" type="int" value="90"/>
+                    <constructor-arg name="type" type="ua.epam.rd.domain.PizzaType" value="MARGARITA"/>
+                </bean>
+                <bean class="ua.epam.rd.domain.Pizza">
+                    <constructor-arg name="name" type="java.lang.String" value="SmallMargarita"/>
+                    <constructor-arg name="price" type="int" value="40"/>
+                    <constructor-arg name="type" type="ua.epam.rd.domain.PizzaType" value="MARGARITA"/>
+                </bean>
+                <bean class="ua.epam.rd.domain.Pizza">
+                    <constructor-arg name="name" type="java.lang.String" value="SmallSalyami"/>
+                    <constructor-arg name="price" type="int" value="60"/>
+                    <constructor-arg name="type" type="ua.epam.rd.domain.PizzaType" value="SALYAMI"/>
+                </bean>
+                <bean class="ua.epam.rd.domain.Pizza">
+                    <constructor-arg name="name" type="java.lang.String" value="BigCheese"/>
+                    <constructor-arg name="price" type="int" value="120"/>
+                    <constructor-arg name="type" type="ua.epam.rd.domain.PizzaType" value="CHEESE"/>
+                </bean>
+                <bean class="ua.epam.rd.domain.Pizza">
+                    <constructor-arg name="name" type="java.lang.String" value="SmallCheese"/>
+                    <constructor-arg name="price" type="int" value="50"/>
+                    <constructor-arg name="type" type="ua.epam.rd.domain.PizzaType" value="CHEESE"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Заменяет непонятные исключения Hibernate на
+    другие непонятные исколючения от Spring -->
+    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
+
+    <!-- используется Spring для генерации EntityManager-->
+    <bean id="entityManagerFactory"
+          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="myPersistentUnitPostgres"/>
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- Подтянет настройки БД из jdbc.properties -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="jdbc.properties"/>
+    </bean>
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${driver}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${user}"/>
+        <property name="password" value="${password}"/>
+    </bean>
+
+    <!-- без менеджера транзакции не работают -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+
+
+</beans>
